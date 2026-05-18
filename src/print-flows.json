@@ -1,0 +1,12 @@
+[
+  {
+    "id": "default",
+    "name": "默认打印",
+    "steps": [
+      {
+        "type": "current",
+        "printFieldName": "打印链接"
+      }
+    ]
+  }
+]

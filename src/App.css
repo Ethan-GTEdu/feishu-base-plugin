@@ -10,3 +10,153 @@
   color: #d63384;
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
+
+/* === Flow Editor === */
+
+.flow-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.flow-editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.flow-editor-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.flow-list {
+  border: 1px solid #e8e8e8;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.flow-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background: #fafafa;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.flow-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  cursor: pointer;
+  border-bottom: 1px solid #f5f5f5;
+  transition: background 0.15s;
+}
+
+.flow-list-item:last-child {
+  border-bottom: none;
+}
+
+.flow-list-item:hover {
+  background: #f0f7ff;
+}
+
+.flow-list-item.active {
+  background: #e6f4ff;
+  border-left: 3px solid #1677ff;
+}
+
+.flow-list-item-name {
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.flow-list-item-badge {
+  font-size: 11px;
+  color: #999;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.flow-detail {
+  border: 1px solid #e8e8e8;
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.flow-detail-row {
+  margin-bottom: 12px;
+}
+
+.flow-detail-row:last-child {
+  margin-bottom: 0;
+}
+
+.flow-detail-row > label {
+  display: block;
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 6px;
+}
+
+.step-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.step-item {
+  border: 1px solid #e8e8e8;
+  border-radius: 4px;
+  padding: 8px;
+  background: #fafafa;
+}
+
+.step-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.step-item-badge {
+  font-size: 12px;
+  font-weight: 500;
+  color: #333;
+}
+
+.step-item-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.step-item-actions .semi-button {
+  min-width: 24px;
+  padding: 0 4px;
+}
+
+.step-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.step-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.step-field-label {
+  font-size: 11px;
+  color: #666;
+  white-space: nowrap;
+  min-width: 80px;
+}
