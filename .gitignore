@@ -25,3 +25,5 @@ yarn-debug.log*
 yarn-error.log*
 
 lark-base-open-doc
+
+dist
