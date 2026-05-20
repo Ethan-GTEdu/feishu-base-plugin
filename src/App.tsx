@@ -1,11 +1,12 @@
 import "./App.css";
 import { bitable, IGridView } from "@lark-base-open/js-sdk";
-import { Button, Select, Empty, Spin, Toast } from "@douyinfe/semi-ui";
+import { Button, Select, Empty, Spin, Toast, TabPane, Tabs } from "@douyinfe/semi-ui";
 import { useState, useCallback } from "react";
 import { requestBatchPrint, BATCH_LIMIT } from "./lib/print-service";
 import { type PrintFlow, setFlows, getFlows, loadFlows } from "./lib/print-flow";
 import { executePrintFlow } from "./lib/executors";
 import FlowEditor from "./components/FlowEditor";
+import TableSchema from "./components/TableSchema";
 import flowsConfig from "./print-flows.json";
 
 interface SelectedRecord {
@@ -130,62 +131,72 @@ export default function App() {
 
   return (
     <main className="main">
-      {/* 打印方案选择 */}
-      <div style={{ marginBottom: 12 }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-          <span style={{ fontSize: 12, color: "#666" }}>打印方案</span>
-          <Button
-            size="small"
-            type="tertiary"
-            onClick={() => setEditMode(true)}
-            style={{ fontSize: 12, padding: "0 6px" }}
-          >
-            编辑方案
-          </Button>
-        </div>
-        <Select
-          style={{ width: "100%" }}
-          value={selectedFlowId}
-          onChange={(v) => setSelectedFlowId(v as string)}
-          optionList={flows.map((f) => ({ label: f.name, value: f.id }))}
-          emptyContent="暂无方案，请点击「编辑方案」创建"
-        />
-      </div>
+      <Tabs type="line" size="small">
+        <TabPane tab="批量打印" itemKey="print">
+          {/* 打印方案选择 */}
+          <div style={{ marginBottom: 12, marginTop: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+              <span style={{ fontSize: 12, color: "#666" }}>打印方案</span>
+              <Button
+                size="small"
+                type="tertiary"
+                onClick={() => setEditMode(true)}
+                style={{ fontSize: 12, padding: "0 6px" }}
+              >
+                编辑方案
+              </Button>
+            </div>
+            <Select
+              style={{ width: "100%" }}
+              value={selectedFlowId}
+              onChange={(v) => setSelectedFlowId(v as string)}
+              optionList={flows.map((f) => ({ label: f.name, value: f.id }))}
+              emptyContent="暂无方案，请点击「编辑方案」创建"
+            />
+          </div>
 
-      {/* 获取数据 */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-        <span style={{ fontSize: 13, color: "#666" }}>
-          {records.length > 0 ? `已选中 ${records.length} 条记录` : "请在表格中选中记录"}
-        </span>
-        <Button onClick={handleGetSelected} loading={loading} size="small">
-          获取选中数据
-        </Button>
-      </div>
+          {/* 获取数据 */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+            <span style={{ fontSize: 13, color: "#666" }}>
+              {records.length > 0 ? `已选中 ${records.length} 条记录` : "请在表格中选中记录"}
+            </span>
+            <Button onClick={handleGetSelected} loading={loading} size="small">
+              获取选中数据
+            </Button>
+          </div>
 
-      {/* 记录列表 */}
-      {loading ? (
-        <div style={{ textAlign: "center", padding: 40 }}><Spin /></div>
-      ) : records.length > 0 ? (
-        <>
-          <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-            {records.map((r, i) => (
-              <li key={r.recordId} style={{ padding: "6px 0", borderBottom: "1px solid #f0f0f0", fontSize: 13 }}>
-                {i + 1}. {r.primaryValue}
-              </li>
-            ))}
-          </ul>
-          <Button
-            theme="solid"
-            onClick={handleGoPrint}
-            loading={printing}
-            style={{ width: "100%", marginTop: 16 }}
-          >
-            前往打印{records.length > 0 ? ` (${records.length} 条)` : ""}
-          </Button>
-        </>
-      ) : (
-        <Empty description="暂无数据" style={{ marginTop: 20 }} />
-      )}
+          {/* 记录列表 */}
+          {loading ? (
+            <div style={{ textAlign: "center", padding: 40 }}><Spin /></div>
+          ) : records.length > 0 ? (
+            <>
+              <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                {records.map((r, i) => (
+                  <li key={r.recordId} style={{ padding: "6px 0", borderBottom: "1px solid #f0f0f0", fontSize: 13 }}>
+                    {i + 1}. {r.primaryValue}
+                  </li>
+                ))}
+              </ul>
+              <Button
+                theme="solid"
+                onClick={handleGoPrint}
+                loading={printing}
+                style={{ width: "100%", marginTop: 16 }}
+              >
+                前往打印{records.length > 0 ? ` (${records.length} 条)` : ""}
+              </Button>
+            </>
+          ) : (
+            <Empty description="暂无数据" style={{ marginTop: 20 }} />
+          )}
+        </TabPane>
+
+        <TabPane tab="表结构" itemKey="schema">
+          <div style={{ marginTop: 12 }}>
+            <TableSchema />
+          </div>
+        </TabPane>
+      </Tabs>
     </main>
   );
 }
