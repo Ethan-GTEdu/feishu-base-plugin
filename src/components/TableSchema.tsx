@@ -158,8 +158,8 @@ export default function TableSchema() {
       let md = `# 表结构：${tableName}\n\n`;
       md += `> 视图：${viewName}  \n`;
       md += `> 字段数量：${fieldMetaList.length}\n\n`;
-      md += `| # | 字段名 | 类型 | 值范围/说明 |\n`;
-      md += `|---|--------|------|-------------|\n`;
+      md += `| # | 字段名 | 类型 | 描述 | 值范围/说明 |\n`;
+      md += `|---|--------|------|------|-------------|\n`;
 
       for (let i = 0; i < fieldMetaList.length; i++) {
         const meta = fieldMetaList[i];
@@ -172,11 +172,15 @@ export default function TableSchema() {
           valueRange = "(获取失败)";
         }
 
-        // 转义 Markdown 表格中的管道符
+        // 提取字段描述
+        const description = getFieldDescription(meta);
+
+        // 转义 Markdown 表格中的管道符和换行
         const escapedName = meta.name.replace(/\|/g, "\\|");
+        const escapedDesc = description.replace(/\|/g, "\\|").replace(/\n/g, " ");
         const escapedRange = valueRange.replace(/\|/g, "\\|");
 
-        md += `| ${i + 1} | ${escapedName} | ${typeName} | ${escapedRange} |\n`;
+        md += `| ${i + 1} | ${escapedName} | ${typeName} | ${escapedDesc} | ${escapedRange} |\n`;
       }
 
       setMarkdown(md);
@@ -274,6 +278,15 @@ export default function TableSchema() {
       )}
     </div>
   );
+}
+
+/**
+ * 提取字段描述文本
+ */
+function getFieldDescription(meta: IFieldMeta): string {
+  const content = meta.description?.content;
+  if (!content || content.length === 0) return "-";
+  return content.map((seg) => seg.text || "").join("");
 }
 
 /**
