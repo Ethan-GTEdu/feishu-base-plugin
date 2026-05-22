@@ -7,6 +7,7 @@ import { type PrintFlow, setFlows, getFlows, loadFlows } from "./lib/print-flow"
 import { executePrintFlow } from "./lib/executors";
 import FlowEditor from "./components/FlowEditor";
 import TableSchema from "./components/TableSchema";
+import DataExport from "./components/DataExport";
 import flowsConfig from "./print-flows.json";
 
 interface SelectedRecord {
@@ -189,6 +190,12 @@ export default function App() {
           ) : (
             <Empty description="暂无数据" style={{ marginTop: 20 }} />
           )}
+        </TabPane>
+
+        <TabPane tab="数据导出" itemKey="export">
+          <div style={{ marginTop: 12 }}>
+            <DataExport />
+          </div>
         </TabPane>
 
         <TabPane tab="表结构" itemKey="schema">
