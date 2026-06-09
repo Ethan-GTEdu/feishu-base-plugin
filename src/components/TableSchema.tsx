@@ -68,44 +68,12 @@ export default function TableSchema() {
   const [selectedTableId, setSelectedTableId] = useState<string>("");
   const [selectedViewId, setSelectedViewId] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [initLoading, setInitLoading] = useState(true);
   const [markdown, setMarkdown] = useState<string>("");
 
-  // 初始化：获取所有表格列表，默认选中当前活跃表格和视图
-  useEffect(() => {
-    (async () => {
-      try {
-        const tableList = await bitable.base.getTableList();
-        const tableOptions: TableOption[] = [];
-        for (const t of tableList) {
-          const name = await t.getName();
-          tableOptions.push({ label: name, value: t.id });
-        }
-        setTables(tableOptions);
-
-        // 默认选中当前活跃表格
-        const selection = await bitable.base.getSelection();
-        if (selection.tableId) {
-          setSelectedTableId(selection.tableId);
-        } else if (tableOptions.length > 0) {
-          setSelectedTableId(tableOptions[0].value);
-        }
-
-        // 加载视图列表
-        if (selection.tableId) {
-          const activeTable = await bitable.base.getTable(selection.tableId);
-          await loadViews(activeTable, selection.viewId || undefined);
-        }
-      } catch (e) {
-        console.error("初始化失败:", e);
-      } finally {
-        setInitLoading(false);
-      }
-    })();
-  }, []);
-
   // 加载指定表格的视图列表
-  const loadViews = async (table: ITable, defaultViewId?: string) => {
+  const loadViews = useCallback(async (table: ITable, defaultViewId?: string) => {
     const viewMetaList = await table.getViewMetaList();
     const viewOptions: ViewOption[] = viewMetaList.map((v) => ({
       label: v.name,
@@ -117,8 +85,58 @@ export default function TableSchema() {
       setSelectedViewId(defaultViewId);
     } else if (viewOptions.length > 0) {
       setSelectedViewId(viewOptions[0].value);
+    } else {
+      setSelectedViewId("");
     }
-  };
+  }, []);
+
+  const syncToCurrentSelection = useCallback(
+    async (options?: { showToast?: boolean; clearMarkdown?: boolean }) => {
+      setRefreshing(true);
+      if (options?.clearMarkdown !== false) {
+        setMarkdown("");
+      }
+
+      try {
+        const tableList = await bitable.base.getTableList();
+        const tableOptions: TableOption[] = [];
+        for (const t of tableList) {
+          const name = await t.getName();
+          tableOptions.push({ label: name, value: t.id });
+        }
+        setTables(tableOptions);
+
+        const selection = await bitable.base.getSelection();
+        const tableId =
+          selection.tableId || tableOptions[0]?.value || "";
+        setSelectedTableId(tableId);
+
+        if (tableId) {
+          const activeTable = await bitable.base.getTable(tableId);
+          await loadViews(activeTable, selection.viewId || undefined);
+        } else {
+          setViews([]);
+          setSelectedViewId("");
+        }
+
+        if (options?.showToast) {
+          Toast.success("已同步当前表格/视图");
+        }
+      } catch (e) {
+        console.error("同步表格/视图失败:", e);
+        Toast.error("刷新失败");
+      } finally {
+        setRefreshing(false);
+        setInitLoading(false);
+      }
+    },
+    [loadViews],
+  );
+
+  // 初始化：获取所有表格列表，默认选中当前活跃表格和视图
+  useEffect(() => {
+    syncToCurrentSelection();
+  }, [syncToCurrentSelection]);
 
   // 切换表格时重新加载视图
   const handleTableChange = useCallback(async (tableId: string) => {
@@ -209,8 +227,35 @@ export default function TableSchema() {
     );
   }
 
+  const contextLabel = (() => {
+    const tableName = tables.find((t) => t.value === selectedTableId)?.label;
+    const viewName = views.find((v) => v.value === selectedViewId)?.label;
+    if (tableName && viewName) return `${tableName} / ${viewName}`;
+    if (tableName) return tableName;
+    return "";
+  })();
+
   return (
     <div className="table-schema">
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <span style={{ fontSize: 12, color: "#666" }}>
+          {contextLabel || "当前表格 / 视图"}
+        </span>
+        <Button
+          size="small"
+          onClick={() => syncToCurrentSelection({ showToast: true })}
+          loading={refreshing}
+        >
+          刷新
+        </Button>
+      </div>
+
       {/* 表格选择 */}
       <div className="table-schema-row">
         <label>数据表</label>

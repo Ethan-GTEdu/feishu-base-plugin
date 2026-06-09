@@ -31,31 +31,59 @@ interface FieldOption {
   checked: boolean;
 }
 
+async function loadActiveViewContext(): Promise<{
+  contextLabel: string;
+  fieldOptions: FieldOption[];
+}> {
+  const table = await bitable.base.getActiveTable();
+  const tableName = await table.getName();
+  const view = (await table.getActiveView()) as IGridView;
+  const viewMetaList = await table.getViewMetaList();
+  const viewName =
+    viewMetaList.find((v) => v.id === view.id)?.name || view.id;
+  const metas = await view.getFieldMetaList();
+
+  return {
+    contextLabel: `${tableName} / ${viewName}`,
+    fieldOptions: metas.map((m) => ({ meta: m, checked: true })),
+  };
+}
+
 export default function DataExport() {
   const [fieldOptions, setFieldOptions] = useState<FieldOption[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [contextLabel, setContextLabel] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [format, setFormat] = useState<ExportFormat>("text");
   const [output, setOutput] = useState("");
   const [selectedCount, setSelectedCount] = useState(0);
   const [initLoading, setInitLoading] = useState(true);
 
+  const refreshContext = useCallback(async (options?: { showToast?: boolean }) => {
+    setRefreshing(true);
+    try {
+      const { contextLabel: label, fieldOptions: options_ } =
+        await loadActiveViewContext();
+      setContextLabel(label);
+      setFieldOptions(options_);
+      setOutput("");
+      setSelectedCount(0);
+      if (options?.showToast) {
+        Toast.success("已同步当前表格/视图");
+      }
+    } catch (e) {
+      console.error("加载字段列表失败:", e);
+      Toast.error("加载字段列表失败");
+    } finally {
+      setRefreshing(false);
+      setInitLoading(false);
+    }
+  }, []);
+
   // 初始化：加载当前视图的字段列表
   useEffect(() => {
-    (async () => {
-      try {
-        const table = await bitable.base.getActiveTable();
-        const view = (await table.getActiveView()) as IGridView;
-        const metas = await view.getFieldMetaList();
-        setFieldOptions(metas.map((m) => ({ meta: m, checked: true })));
-      } catch (e) {
-        console.error("加载字段列表失败:", e);
-        Toast.error("加载字段列表失败");
-      } finally {
-        setInitLoading(false);
-      }
-    })();
-  }, []);
+    refreshContext();
+  }, [refreshContext]);
 
   // 全选/取消全选
   const handleSelectAll = useCallback(
@@ -213,6 +241,23 @@ export default function DataExport() {
 
   return (
     <div className="data-export">
+      {/* 当前上下文 + 刷新 */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 12,
+        }}
+      >
+        <span style={{ fontSize: 12, color: "#666" }}>
+          {contextLabel || "当前表格 / 视图"}
+        </span>
+        <Button size="small" onClick={() => refreshContext({ showToast: true })} loading={refreshing}>
+          刷新
+        </Button>
+      </div>
+
       {/* 导出格式 */}
       <div style={{ marginBottom: 12 }}>
         <div style={{ fontSize: 12, color: "#666", marginBottom: 4 }}>
